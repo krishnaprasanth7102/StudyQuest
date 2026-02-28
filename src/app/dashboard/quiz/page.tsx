@@ -9,6 +9,7 @@ import { useState } from "react";
 import { generateQuizFromStudyMaterial, type GenerateQuizOutput } from "@/ai/flows/generate-quiz-from-study-material";
 import { receiveAIQuizExplanations } from "@/ai/flows/receive-ai-quiz-explanations";
 import { useToast } from "@/hooks/use-toast";
+import { cn } from "@/lib/utils";
 
 // Mock initial data if no material is uploaded
 const mockQuiz: GenerateQuizOutput = {
