@@ -2,7 +2,20 @@
 
 import { DashboardLayout } from "@/components/layout/dashboard-layout";
 import { Button } from "@/components/ui/button";
-import { Timer, Play, Pause, RotateCcw, Coffee, BookOpen, Music, Settings2, Plus, Minus, Flame, Target, Trophy } from "lucide-react";
+import { 
+  Play, 
+  Pause, 
+  RotateCcw, 
+  Coffee, 
+  BookOpen, 
+  Settings2, 
+  Plus, 
+  Minus, 
+  Flame, 
+  Target, 
+  Trophy,
+  BellRing
+} from "lucide-react";
 import { useState, useEffect, useMemo } from "react";
 import { useToast } from "@/hooks/use-toast";
 import {
@@ -44,12 +57,17 @@ export default function FocusPage() {
     } else if (timeLeft === 0) {
       setIsActive(false);
       
-      const audio = new Audio("https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3");
-      audio.play().catch(() => {});
+      // Attempt to play a sound
+      try {
+        const audio = new Audio("https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3");
+        audio.play().catch(() => {});
+      } catch (e) {
+        console.warn("Audio playback failed", e);
+      }
       
       toast({
-        title: mode === 'study' ? "Session Complete" : "Break Over",
-        description: mode === 'study' ? "You've completed your focus session." : "Time to get back to work.",
+        title: mode === 'study' ? "Session Complete! 🎉" : "Break Over! ☕",
+        description: mode === 'study' ? "Great job focusing. Time for a well-deserved break." : "Time to get back to your study quest.",
       });
       
       const nextMode = mode === 'study' ? 'break' : 'study';
@@ -71,14 +89,6 @@ export default function FocusPage() {
     setTimeLeft(newSeconds);
   };
 
-  const setTimerSettings = (study: number, breakMin: number) => {
-    setStudyDuration(study);
-    setBreakDuration(breakMin);
-    if (!isActive) {
-      setTimeLeft((mode === 'study' ? study : breakMin) * 60);
-    }
-  };
-
   const handleModeChange = (newMode: 'study' | 'break') => {
     if (newMode === mode) return;
     setMode(newMode);
@@ -92,26 +102,26 @@ export default function FocusPage() {
     return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
   };
 
-  const progress = ((totalSeconds - timeLeft) / totalSeconds) * 100;
+  const progressValue = ((totalSeconds - timeLeft) / totalSeconds) * 100;
 
   return (
     <DashboardLayout>
-      <div className="max-w-6xl mx-auto space-y-8">
-        {/* Header Section */}
-        <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
-          <div>
-            <h1 className="text-3xl font-bold tracking-tight">Focus Timer</h1>
-            <p className="text-muted-foreground">Classic pomodoro technique for maximum productivity.</p>
+      <div className="max-w-5xl mx-auto space-y-8 animate-in fade-in duration-700">
+        {/* Header */}
+        <div className="flex flex-col md:flex-row items-center justify-between gap-6">
+          <div className="text-center md:text-left">
+            <h1 className="text-3xl font-headline font-bold">Focus Hub</h1>
+            <p className="text-muted-foreground mt-1 text-sm">Classic Pomodoro technique for deep work.</p>
           </div>
           
           <Tabs value={mode} onValueChange={(v) => handleModeChange(v as 'study' | 'break')} className="w-full md:w-auto">
-            <TabsList className="grid w-full grid-cols-2 h-11 p-1 bg-muted rounded-xl">
-              <TabsTrigger value="study" className="rounded-lg data-[state=active]:bg-background data-[state=active]:shadow-sm transition-all">
-                <BookOpen className="mr-2 h-4 w-4" />
+            <TabsList className="grid w-full grid-cols-2 p-1 bg-slate-100 dark:bg-slate-800 rounded-xl">
+              <TabsTrigger value="study" className="rounded-lg gap-2 data-[state=active]:bg-white dark:data-[state=active]:bg-slate-900 shadow-sm">
+                <BookOpen className="h-4 w-4" />
                 Focus
               </TabsTrigger>
-              <TabsTrigger value="break" className="rounded-lg data-[state=active]:bg-background data-[state=active]:shadow-sm transition-all">
-                <Coffee className="mr-2 h-4 w-4" />
+              <TabsTrigger value="break" className="rounded-lg gap-2 data-[state=active]:bg-white dark:data-[state=active]:bg-slate-900 shadow-sm">
+                <Coffee className="h-4 w-4" />
                 Break
               </TabsTrigger>
             </TabsList>
@@ -119,216 +129,193 @@ export default function FocusPage() {
         </div>
 
         <div className="grid lg:grid-cols-12 gap-8">
-          {/* Main Timer Display */}
-          <Card className="lg:col-span-8 flex flex-col items-center justify-center py-16 px-4 border-none shadow-sm bg-white dark:bg-slate-900 rounded-[2.5rem]">
-            <div className="relative flex items-center justify-center mb-12">
-              {/* Minimalist Progress Circle */}
-              <svg className="absolute w-[320px] h-[320px] md:w-[420px] md:h-[420px] -rotate-90">
-                <circle
-                  cx="50%"
-                  cy="50%"
-                  r="150"
-                  className="md:hidden text-muted/20"
-                  stroke="currentColor"
-                  strokeWidth="4"
-                  fill="transparent"
-                />
-                <circle
-                  cx="50%"
-                  cy="50%"
-                  r="190"
-                  className="hidden md:block text-muted/20"
-                  stroke="currentColor"
-                  strokeWidth="4"
-                  fill="transparent"
-                />
-                <circle
-                  cx="50%"
-                  cy="50%"
-                  r="150"
-                  className={cn(
-                    "md:hidden transition-all duration-300 ease-linear",
-                    mode === 'study' ? "text-primary" : "text-success"
-                  )}
-                  stroke="currentColor"
-                  strokeWidth="4"
-                  fill="transparent"
-                  strokeDasharray="942"
-                  strokeDashoffset={942 * (1 - progress / 100)}
-                  strokeLinecap="round"
-                />
-                <circle
-                  cx="50%"
-                  cy="50%"
-                  r="190"
-                  className={cn(
-                    "hidden md:block transition-all duration-300 ease-linear",
-                    mode === 'study' ? "text-primary" : "text-success"
-                  )}
-                  stroke="currentColor"
-                  strokeWidth="4"
-                  fill="transparent"
-                  strokeDasharray="1194"
-                  strokeDashoffset={1194 * (1 - progress / 100)}
-                  strokeLinecap="round"
-                />
-              </svg>
-              
-              <div className="relative z-10 text-center">
-                <div className="text-7xl md:text-9xl font-bold tracking-tighter tabular-nums text-slate-900 dark:text-white mb-2">
+          {/* Main Classic Timer */}
+          <Card className="lg:col-span-8 border-none shadow-sm bg-white dark:bg-slate-900 rounded-[2.5rem] overflow-hidden">
+            <CardContent className="flex flex-col items-center justify-center py-20">
+              {/* Simple Linear Progress */}
+              <div className="w-full max-w-md mb-12 space-y-2">
+                <div className="flex justify-between text-[10px] font-bold text-muted-foreground uppercase tracking-widest">
+                  <span>{mode === 'study' ? 'Focus Session' : 'Short Break'}</span>
+                  <span>{Math.round(progressValue)}%</span>
+                </div>
+                <Progress value={progressValue} className="h-1.5 bg-slate-100 dark:bg-slate-800" />
+              </div>
+
+              {/* Digital Time Readout */}
+              <div className="text-center mb-10">
+                <div className="text-8xl md:text-9xl font-bold tracking-tight tabular-nums text-slate-900 dark:text-white">
                   {formatTime(timeLeft)}
                 </div>
-                <p className="text-sm font-semibold uppercase tracking-widest text-muted-foreground">
-                  {mode === 'study' ? 'Deep Work Session' : 'Recharge Break'}
-                </p>
-              </div>
-            </div>
-
-            <div className="flex items-center gap-6">
-              <Button 
-                variant="outline" 
-                size="icon" 
-                className="h-14 w-14 rounded-full border-2 hover:bg-accent transition-all active:scale-95"
-                onClick={resetTimer}
-              >
-                <RotateCcw className="h-6 w-6" />
-              </Button>
-              
-              <Button 
-                size="lg"
-                className={cn(
-                  "h-20 w-48 rounded-full text-xl font-bold shadow-xl transition-all duration-300 hover:scale-[1.02] active:scale-95",
-                  isActive 
-                    ? 'bg-slate-900 dark:bg-slate-50 text-white dark:text-slate-900 hover:opacity-90' 
-                    : 'bg-primary text-white hover:bg-primary/90'
-                )}
-                onClick={toggleTimer}
-              >
-                {isActive ? (
-                  <><Pause className="mr-3 h-7 w-7 fill-current" /> Pause</>
-                ) : (
-                  <><Play className="mr-3 h-7 w-7 fill-current" /> Start</>
-                )}
-              </Button>
-
-              <Dialog>
-                <DialogTrigger asChild>
-                  <Button variant="outline" size="icon" className="h-14 w-14 rounded-full border-2 hover:bg-accent transition-all active:scale-95">
-                    <Settings2 className="h-6 w-6" />
+                <div className="mt-4 flex items-center justify-center gap-4">
+                  <Button 
+                    variant="ghost" 
+                    size="sm" 
+                    className="h-8 w-8 rounded-full p-0"
+                    onClick={() => adjustTime(-1)}
+                  >
+                    <Minus className="h-4 w-4" />
                   </Button>
-                </DialogTrigger>
-                <DialogContent className="rounded-3xl sm:max-w-md">
-                  <DialogHeader>
-                    <DialogTitle>Focus Preferences</DialogTitle>
-                  </DialogHeader>
-                  <div className="grid gap-6 py-6">
-                    <div className="space-y-3">
-                      <Label className="text-sm font-semibold">Focus Duration (minutes)</Label>
-                      <Input
-                        type="number"
-                        value={studyDuration}
-                        onChange={(e) => setTimerSettings(parseInt(e.target.value) || 1, breakDuration)}
-                        className="h-12 rounded-xl text-lg"
-                      />
+                  <span className="text-xs font-bold uppercase tracking-widest text-muted-foreground">Adjust Seconds</span>
+                  <Button 
+                    variant="ghost" 
+                    size="sm" 
+                    className="h-8 w-8 rounded-full p-0"
+                    onClick={() => adjustTime(1)}
+                  >
+                    <Plus className="h-4 w-4" />
+                  </Button>
+                </div>
+              </div>
+
+              {/* Classic Controls */}
+              <div className="flex items-center gap-4">
+                <Button 
+                  variant="outline" 
+                  size="icon" 
+                  className="h-14 w-14 rounded-2xl border-2 hover:bg-slate-50 dark:hover:bg-slate-800 transition-all active:scale-95"
+                  onClick={resetTimer}
+                >
+                  <RotateCcw className="h-6 w-6" />
+                </Button>
+                
+                <Button 
+                  size="lg"
+                  className={cn(
+                    "h-16 px-12 rounded-2xl text-lg font-bold shadow-lg transition-all active:scale-95",
+                    isActive 
+                      ? "bg-slate-900 text-white hover:opacity-90 dark:bg-slate-50 dark:text-slate-900" 
+                      : "gradient-button"
+                  )}
+                  onClick={toggleTimer}
+                >
+                  {isActive ? (
+                    <><Pause className="mr-2 h-5 w-5 fill-current" /> Pause</>
+                  ) : (
+                    <><Play className="mr-2 h-5 w-5 fill-current" /> Start</>
+                  )}
+                </Button>
+
+                <Dialog>
+                  <DialogTrigger asChild>
+                    <Button variant="outline" size="icon" className="h-14 w-14 rounded-2xl border-2 hover:bg-slate-50 dark:hover:bg-slate-800 transition-all active:scale-95">
+                      <Settings2 className="h-6 w-6" />
+                    </Button>
+                  </DialogTrigger>
+                  <DialogContent className="rounded-[2rem] sm:max-w-md">
+                    <DialogHeader>
+                      <DialogTitle className="text-xl font-headline font-bold">Timer Configuration</DialogTitle>
+                    </DialogHeader>
+                    <div className="grid gap-6 py-6">
+                      <div className="space-y-3">
+                        <Label className="text-sm font-semibold flex items-center gap-2">
+                          <BookOpen className="h-4 w-4 text-primary" />
+                          Focus Duration (min)
+                        </Label>
+                        <Input
+                          type="number"
+                          value={studyDuration}
+                          onChange={(e) => {
+                            const val = parseInt(e.target.value) || 1;
+                            setStudyDuration(val);
+                            if (!isActive && mode === 'study') setTimeLeft(val * 60);
+                          }}
+                          className="h-12 rounded-xl text-lg"
+                        />
+                      </div>
+                      <div className="space-y-3">
+                        <Label className="text-sm font-semibold flex items-center gap-2">
+                          <Coffee className="h-4 w-4 text-secondary" />
+                          Break Duration (min)
+                        </Label>
+                        <Input
+                          type="number"
+                          value={breakDuration}
+                          onChange={(e) => {
+                            const val = parseInt(e.target.value) || 1;
+                            setBreakDuration(val);
+                            if (!isActive && mode === 'break') setTimeLeft(val * 60);
+                          }}
+                          className="h-12 rounded-xl text-lg"
+                        />
+                      </div>
                     </div>
-                    <div className="space-y-3">
-                      <Label className="text-sm font-semibold">Break Duration (minutes)</Label>
-                      <Input
-                        type="number"
-                        value={breakDuration}
-                        onChange={(e) => setTimerSettings(studyDuration, parseInt(e.target.value) || 1)}
-                        className="h-12 rounded-xl text-lg"
-                      />
-                    </div>
-                  </div>
-                  <DialogFooter>
-                    <Button onClick={resetTimer} className="w-full h-12 rounded-xl font-bold">Apply & Reset</Button>
-                  </DialogFooter>
-                </DialogContent>
-              </Dialog>
-            </div>
+                    <DialogFooter>
+                      <Button onClick={resetTimer} className="w-full h-12 rounded-xl font-bold gradient-button">Apply Changes</Button>
+                    </DialogFooter>
+                  </DialogContent>
+                </Dialog>
+              </div>
+            </CardContent>
           </Card>
 
-          {/* Sidebar Stats & Presets */}
+          {/* Right Column: Presets & Stats */}
           <div className="lg:col-span-4 space-y-6">
-            <Card className="border-none shadow-sm rounded-3xl overflow-hidden">
-              <CardHeader className="bg-slate-50 dark:bg-slate-800/50 pb-4">
-                <CardTitle className="text-sm font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-2">
+            <Card className="border-none shadow-sm rounded-3xl bg-white dark:bg-slate-900">
+              <CardHeader className="pb-4">
+                <CardTitle className="text-xs font-bold uppercase tracking-widest text-muted-foreground flex items-center gap-2">
                   <Target className="h-4 w-4" />
-                  Quick Selection
+                  Quick Set
                 </CardTitle>
               </CardHeader>
-              <CardContent className="pt-6">
-                <div className="grid grid-cols-2 gap-3">
-                  {PRESETS.map((p) => (
-                    <Button
-                      key={p}
-                      variant="outline"
-                      className={cn(
-                        "rounded-2xl h-14 font-bold text-lg border-2 transition-all",
-                        (mode === 'study' ? studyDuration : breakDuration) === p 
-                          ? "border-primary text-primary bg-primary/5" 
-                          : "hover:border-primary/40"
-                      )}
-                      onClick={() => {
-                        if (mode === 'study') setStudyDuration(p);
-                        else setBreakDuration(p);
-                        setTimeLeft(p * 60);
-                        setIsActive(false);
-                      }}
-                    >
-                      {p}m
-                    </Button>
-                  ))}
-                </div>
+              <CardContent className="grid grid-cols-2 gap-2">
+                {PRESETS.map((p) => (
+                  <Button
+                    key={p}
+                    variant="ghost"
+                    className={cn(
+                      "rounded-xl h-12 font-bold text-sm border transition-all",
+                      (mode === 'study' ? studyDuration : breakDuration) === p 
+                        ? "border-primary text-primary bg-primary/5" 
+                        : "border-slate-100 dark:border-slate-800 hover:border-primary/50"
+                    )}
+                    onClick={() => {
+                      if (mode === 'study') setStudyDuration(p);
+                      else setBreakDuration(p);
+                      setTimeLeft(p * 60);
+                      setIsActive(false);
+                    }}
+                  >
+                    {p}m
+                  </Button>
+                ))}
               </CardContent>
             </Card>
 
-            <Card className="border-none shadow-sm rounded-3xl">
+            <Card className="border-none shadow-sm rounded-3xl bg-white dark:bg-slate-900">
               <CardHeader className="pb-4">
-                <CardTitle className="text-sm font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-2">
-                  <Flame className="h-4 w-4" />
-                  Daily Quest Progress
+                <CardTitle className="text-xs font-bold uppercase tracking-widest text-muted-foreground flex items-center gap-2">
+                  <Flame className="h-4 w-4 text-orange-500" />
+                  Today's Quest
                 </CardTitle>
               </CardHeader>
-              <CardContent className="space-y-6">
-                <div className="flex items-end justify-between">
-                  <div className="space-y-1">
-                    <p className="text-3xl font-bold">120 <span className="text-sm font-medium text-muted-foreground">min</span></p>
-                    <p className="text-xs text-success font-bold flex items-center gap-1">
+              <CardContent className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <div className="space-y-0.5">
+                    <p className="text-2xl font-bold">120<span className="text-xs text-muted-foreground ml-1">min</span></p>
+                    <p className="text-[10px] text-success font-bold flex items-center gap-1">
                       <Trophy className="h-3 w-3" />
-                      +15% from yesterday
+                      Daily streak: 5 days
                     </p>
                   </div>
-                  <div className="text-right">
-                    <p className="text-sm font-bold">Goal: 160m</p>
-                    <p className="text-xs text-muted-foreground">4 of 6 sessions</p>
+                  <div className="h-10 w-10 bg-orange-50 dark:bg-orange-950/30 rounded-full flex items-center justify-center">
+                    <Flame className="h-5 w-5 text-orange-500" />
                   </div>
                 </div>
-                
-                <div className="space-y-2">
-                  <div className="flex justify-between text-[10px] font-bold text-muted-foreground uppercase tracking-widest">
-                    <span>Progress</span>
-                    <span>75%</span>
-                  </div>
-                  <Progress value={75} className="h-2 rounded-full" />
-                </div>
+                <Progress value={75} className="h-1.5 bg-slate-100 dark:bg-slate-800" />
+                <p className="text-xs text-muted-foreground text-center">75% of daily goal reached</p>
               </CardContent>
             </Card>
 
-            <Card className="border-none shadow-sm rounded-3xl bg-slate-900 text-white dark:bg-slate-50 dark:text-slate-900">
-              <CardContent className="p-6">
-                <div className="flex items-center gap-4">
-                  <div className="h-12 w-12 rounded-2xl bg-white/10 dark:bg-slate-900/10 flex items-center justify-center">
-                    <Music className="h-6 w-6" />
-                  </div>
-                  <div>
-                    <p className="text-xs font-bold uppercase tracking-widest opacity-60">Ambience</p>
-                    <p className="font-bold">Lo-fi Study Beats</p>
-                  </div>
-                  <Button variant="ghost" size="sm" className="ml-auto text-xs font-bold hover:bg-white/10">Change</Button>
+            <Card className="border-none shadow-sm rounded-3xl bg-slate-900 text-white dark:bg-slate-50 dark:text-slate-900 p-6">
+              <div className="flex items-center gap-4">
+                <div className="h-10 w-10 rounded-xl bg-white/10 dark:bg-slate-900/10 flex items-center justify-center">
+                  <BellRing className="h-5 w-5" />
                 </div>
-              </CardContent>
+                <div>
+                  <p className="text-[10px] font-bold uppercase tracking-widest opacity-60">Status</p>
+                  <p className="text-sm font-bold">{isActive ? 'Focus Mode Active' : 'Waiting to Start'}</p>
+                </div>
+              </div>
             </Card>
           </div>
         </div>
